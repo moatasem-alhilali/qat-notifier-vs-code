@@ -1,7 +1,7 @@
 {
   "name": "qat-notifier",
-  "displayName": "QAT Notifier",
-  "description": "Rule-driven, humorous Arabic roast-style notifications based on editor diagnostics and activity.",
+  "displayName": "QAT مقيل",
+  "description": "إضافة VS Code بإشعارات عربية ساخرة ومحفزة مبنية على قواعد لحالة الملفات ونشاطك (أخطاء/تحذيرات/نظيف/خمول) مع تبريد لمنع الإزعاج.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.109.0"

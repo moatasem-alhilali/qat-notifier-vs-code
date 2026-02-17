@@ -1,43 +1,60 @@
-# QAT Notifier
+# QAT مقيل
 
-QAT Notifier is a rule-driven, humorous, Arabic roast-style notification system for developers. It reacts to diagnostics, editor activity, and idle time to drop playful reminders without spamming.
+**هيا نكود واحنا مكيفين؟**
 
-## Features
+إضافة VS Code عربية تقدّم إشعارات ساخرة ومحفّزة للمبرمجين بناءً على حالة الملف وسلوك المستخدم داخل المحرر، مع احترام تجربة المستخدم وعدم الإزعاج.
 
-- Rule engine with per-rule cooldowns and a global cooldown
-- Diagnostics-aware messages (errors, warnings, clean)
-- Idle + dirty file reminders
-- Interval reminders for general motivation
-- Live reload of rules via command
-- OutputChannel logging (`QAT Notifier`)
+القات نبتة ارتبطت بالمقيل اليمني وأجواء التركيز والنقاش.  
+في البرمجة، صارت رمزًا ساخرًا للحالة الذهنية بين الإبداع والفوضى 😄
 
-## Architecture
+**اسم المشروع (رسمي)**: QAT مقيل
 
-Core services are modular and testable. `src/extension.ts` only wires dependencies and registers events/commands.
+**اقتراحات أسماء بديلة**:
+- QAT Roast
+- QAT Pulse
+- QAT Buddy
+- QAT Buzz
 
-- `src/core/`
-  - `config.ts`: reads settings
-  - `logger.ts`: OutputChannel logger
-  - `types.ts`: shared types
-  - `utils/`: throttle/debounce
-- `src/editor/`
-  - `EditorContext.ts`: active editor snapshot
-  - `EditorEvents.ts`: VS Code event wiring
-  - `IdleTracker.ts`: idle detection
-- `src/analysis/`
-  - `DiagnosticsService.ts`: diagnostics state evaluation
-  - `DocumentScanner.ts`: bounded text scanning (`qat.maxScanChars`)
-- `src/rules/`
-  - `models.ts`: rule types
-  - `RulesService.ts`: load/validate rules JSON
-  - `RuleEngine.ts`: rule evaluation, cooldowns, interval support
-  - `matchers/`: `diagnostics`, `dirtyIdle`, `always`
-- `src/ui/`
-  - `NotificationService.ts`: global cooldown + VS Code notifications
+**وصف مختصر**
+نظام إشعارات ذكي مبني على قواعد، يقرأ التشخيصات (Errors/Warnings/Clean)، ويتابع نشاط المستخدم (فتح/حفظ/كتابة/خمول)، ثم يختار رسالة مرِحة من قوائم قابلة للتخصيص.
 
-## Rules
+## الميزات
 
-Rules live at `.vscode/qat-rules.json` by default. The file is a JSON array of rules matching this shape:
+- محرّك قواعد مع تبريد لكل قاعدة وتبريد عام عالمي
+- إشعارات حسب التشخيصات: أخطاء، تحذيرات، ملف نظيف
+- تنبيه عند الخمول مع ملف غير محفوظ
+- إشعارات دورية للمحفّزات العامة
+- إعادة تحميل القواعد فورًا عبر أمر
+- سجل تفصيلي في OutputChannel باسم `QAT Notifier`
+
+## كيف تشتغل الإضافة
+
+- عند كل حدث (فتح/حفظ/كتابة/خمول/مؤقت) يتم تقييم القواعد المطابقة.
+- يتم احترام التبريد لمنع كثرة الإشعارات.
+- إذا لم يوجد ملف قواعد في المشروع، تستخدم الإضافة قواعد افتراضية مدمجة تلقائيًا.
+
+## البنية المعمارية
+
+`src/extension.ts` مسؤول فقط عن تهيئة الخدمات وربط الأحداث والأوامر.
+
+- `src/core/config.ts`: قراءة الإعدادات
+- `src/core/logger.ts`: سجل OutputChannel
+- `src/core/types.ts`: أنواع مشتركة
+- `src/core/utils/*`: أدوات `throttle` و `debounce`
+- `src/editor/EditorContext.ts`: سياق المحرر الحالي
+- `src/editor/EditorEvents.ts`: ربط أحداث VS Code
+- `src/editor/IdleTracker.ts`: تتبّع الخمول
+- `src/analysis/DiagnosticsService.ts`: تقييم التشخيصات
+- `src/analysis/DocumentScanner.ts`: قراءة محدودة للنصوص الكبيرة
+- `src/rules/models.ts`: نماذج القواعد
+- `src/rules/RulesService.ts`: تحميل القواعد والتحقق منها
+- `src/rules/RuleEngine.ts`: تشغيل القواعد والتبريد والمؤقتات
+- `src/rules/matchers/*`: مطابقة الحالات
+- `src/ui/NotificationService.ts`: عرض الإشعارات مع تبريد عالمي
+
+## القواعد (Rules)
+
+المسار الافتراضي: `.vscode/qat-rules.json` (اختياري).
 
 ```json
 {
@@ -61,30 +78,31 @@ Rules live at `.vscode/qat-rules.json` by default. The file is a JSON array of r
 }
 ```
 
-Notes:
-- `diagnostics` evaluates the active document using `vscode.languages.getDiagnostics`.
-- `dirtyIdle` requires a dirty document and idle time (rule `idleMs` or `qat.idleMs`).
-- `interval` rules run on a timer. The interval uses `cooldownMs` when provided, otherwise `max(qat.globalCooldownMs, 60000)`.
-- If the rules file is missing, QAT Notifier falls back to built-in default rules automatically.
+ملاحظات:
+- `diagnostics` يستخدم `vscode.languages.getDiagnostics`.
+- `dirtyIdle` يتطلب ملف متّسخ وخمولًا (قيمة `idleMs` أو `qat.idleMs`).
+- `interval` يعتمد `cooldownMs` كفترة تشغيل، وإلا يستخدم `max(qat.globalCooldownMs, 60000)`.
+- عند غياب ملف القواعد، تُستخدم القواعد الافتراضية المدمجة تلقائيًا.
 
-## Commands
+## الأوامر
 
 - `QAT: Reload Rules` (`qat-notifier.reloadRules`)
 
-## Settings
+## الإعدادات
 
-- `qat.enabled`: enable/disable QAT Notifier
-- `qat.rulesPath`: path to the rules file (relative or absolute)
-- `qat.globalCooldownMs`: global cooldown between notifications
-- `qat.maxScanChars`: max characters to scan from a document
-- `qat.idleMs`: idle time threshold in milliseconds
+- `qat.enabled`: تفعيل أو تعطيل الإضافة
+- `qat.rulesPath`: مسار ملف القواعد (نسبي أو مطلق)
+- `qat.globalCooldownMs`: التبريد العام بين الإشعارات
+- `qat.maxScanChars`: الحد الأقصى لمسح النصوص
+- `qat.idleMs`: مدة الخمول بالميلي ثانية
 
-## Usage
+## الاستخدام السريع
 
-1. Open `.vscode/qat-rules.json` and edit rules/messages.
-2. Run `QAT: Reload Rules` to apply changes instantly.
-3. Trigger events by saving, typing, or going idle.
+1. افتح مشروعك وشغّل الإضافة.
+2. اختياريًا أنشئ `.vscode/qat-rules.json` وعدّل الرسائل.
+3. شغّل الأمر `QAT: Reload Rules` عند التعديل.
+4. جرّب الحفظ/الكتابة/الخمول لرؤية الإشعارات.
 
-## Output Logs
+## السجلات
 
-Open the Output panel and select `QAT Notifier` to see rule evaluation logs and cooldown decisions.
+افتح لوحة Output واختر `QAT Notifier` لمراجعة القرارات والتبريد وتقييم القواعد.
