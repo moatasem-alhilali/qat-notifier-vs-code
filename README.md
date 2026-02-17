@@ -65,7 +65,7 @@ Notes:
 - `diagnostics` evaluates the active document using `vscode.languages.getDiagnostics`.
 - `dirtyIdle` requires a dirty document and idle time (rule `idleMs` or `qat.idleMs`).
 - `interval` rules run on a timer. The interval uses `cooldownMs` when provided, otherwise `max(qat.globalCooldownMs, 60000)`.
-- If the rules file is missing, QAT Notifier auto-creates it with default rules on activation.
+- If the rules file is missing, QAT Notifier falls back to built-in default rules automatically.
 
 ## Commands
 

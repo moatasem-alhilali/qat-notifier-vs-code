@@ -46,43 +46,43 @@ export class RulesService implements vscode.Disposable {
 	private async loadRules(): Promise<Rule[]> {
 		const uri = this.resolveRulesUri();
 		if (!uri) {
-			this.logger.warn('No workspace folder found. Rules not loaded.');
-			return [];
+			this.logger.warn('No workspace folder found. Using built-in default rules.');
+			return DEFAULT_RULES;
+		}
+
+		const exists = await this.fileExists(uri);
+		if (!exists) {
+			this.logger.info(`Rules file not found at ${uri.fsPath}. Using built-in default rules.`);
+			return DEFAULT_RULES;
 		}
 
 		try {
-			await this.ensureRulesFileExists(uri);
 			const data = await vscode.workspace.fs.readFile(uri);
 			const rawText = Buffer.from(data).toString('utf8');
 			const parsed = JSON.parse(rawText) as unknown;
 			const rawRules = this.extractRules(parsed);
 			if (!rawRules) {
-				this.logger.warn(`Rules file has no rules array: ${uri.fsPath}`);
-				return [];
+				this.logger.warn(`Rules file has no rules array: ${uri.fsPath}. Using defaults.`);
+				return DEFAULT_RULES;
 			}
-			return this.normalizeRules(rawRules, uri);
+			const normalized = this.normalizeRules(rawRules, uri);
+			if (!normalized.length) {
+				this.logger.warn(`No valid rules in ${uri.fsPath}. Using defaults.`);
+				return DEFAULT_RULES;
+			}
+			return normalized;
 		} catch (error) {
-			this.logger.error(`Failed to load rules from ${uri.fsPath}: ${String(error)}`);
-			return [];
+			this.logger.error(`Failed to load rules from ${uri.fsPath}: ${String(error)}. Using defaults.`);
+			return DEFAULT_RULES;
 		}
 	}
 
-	private async ensureRulesFileExists(uri: vscode.Uri): Promise<void> {
+	private async fileExists(uri: vscode.Uri): Promise<boolean> {
 		try {
 			await vscode.workspace.fs.stat(uri);
-			return;
+			return true;
 		} catch {
-			// File does not exist; fall through to create.
-		}
-
-		const directoryPath = path.dirname(uri.fsPath);
-		try {
-			await vscode.workspace.fs.createDirectory(vscode.Uri.file(directoryPath));
-			const payload = JSON.stringify(DEFAULT_RULES, null, 2);
-			await vscode.workspace.fs.writeFile(uri, Buffer.from(payload, 'utf8'));
-			this.logger.info(`Seeded rules file at ${uri.fsPath}`);
-		} catch (error) {
-			this.logger.error(`Failed to create rules file at ${uri.fsPath}: ${String(error)}`);
+			return false;
 		}
 	}
 
