@@ -9,6 +9,10 @@
   "categories": [
     "Productivity"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/moatasem-alhilali/qat-notifier-vs-code.git"
+  },
   "activationEvents": [
     "onStartupFinished",
     "onCommand:qat-notifier.reloadRules"
