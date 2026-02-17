@@ -3,6 +3,7 @@ import * as vscode from 'vscode';
 import { QatConfig } from '../core/config';
 import { Logger } from '../core/logger';
 import { Rule, RuleCheckType, RuleTrigger, NotificationLevel, DiagnosticsMode } from './models';
+import { DEFAULT_RULES } from './seedRules';
 
 const VALID_TRIGGERS: RuleTrigger[] = ['onOpen', 'onSave', 'onType', 'onIdle', 'interval'];
 const VALID_CHECKS: RuleCheckType[] = ['diagnostics', 'dirtyIdle', 'always'];
@@ -50,6 +51,7 @@ export class RulesService implements vscode.Disposable {
 		}
 
 		try {
+			await this.ensureRulesFileExists(uri);
 			const data = await vscode.workspace.fs.readFile(uri);
 			const rawText = Buffer.from(data).toString('utf8');
 			const parsed = JSON.parse(rawText) as unknown;
@@ -62,6 +64,25 @@ export class RulesService implements vscode.Disposable {
 		} catch (error) {
 			this.logger.error(`Failed to load rules from ${uri.fsPath}: ${String(error)}`);
 			return [];
+		}
+	}
+
+	private async ensureRulesFileExists(uri: vscode.Uri): Promise<void> {
+		try {
+			await vscode.workspace.fs.stat(uri);
+			return;
+		} catch {
+			// File does not exist; fall through to create.
+		}
+
+		const directoryPath = path.dirname(uri.fsPath);
+		try {
+			await vscode.workspace.fs.createDirectory(vscode.Uri.file(directoryPath));
+			const payload = JSON.stringify(DEFAULT_RULES, null, 2);
+			await vscode.workspace.fs.writeFile(uri, Buffer.from(payload, 'utf8'));
+			this.logger.info(`Seeded rules file at ${uri.fsPath}`);
+		} catch (error) {
+			this.logger.error(`Failed to create rules file at ${uri.fsPath}: ${String(error)}`);
 		}
 	}
 
