@@ -35,7 +35,7 @@ export class EditorContext {
 		this.config = config;
 	}
 
-	getSnapshot(preferredDocument?: vscode.TextDocument): EditorSnapshot {
+	getSnapshot(preferredDocument?: vscode.TextDocument, includeTextSample = false): EditorSnapshot {
 		const document = preferredDocument ?? this.activeDocument ?? this.activeEditor?.document;
 		if (!document) {
 			return {
@@ -44,7 +44,7 @@ export class EditorContext {
 			};
 		}
 
-		const scan = this.scanner.scan(document, this.config.maxScanChars);
+		const scan = includeTextSample ? this.scanner.scan(document, this.config.maxScanChars) : undefined;
 		return {
 			editor: this.activeEditor,
 			document,
@@ -54,8 +54,8 @@ export class EditorContext {
 			relativePath: this.getRelativePath(document.uri),
 			isDirty: document.isDirty,
 			isUntitled: document.isUntitled,
-			textSample: scan.text,
-			isSampleTruncated: scan.isTruncated,
+			textSample: scan?.text,
+			isSampleTruncated: scan?.isTruncated,
 		};
 	}
 

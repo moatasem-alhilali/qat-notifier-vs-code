@@ -57,7 +57,7 @@ export class IdleTracker implements vscode.Disposable {
 				this.logger.debug(`Idle detected after ${idleFor}ms`);
 				this.onDidIdleEmitter.fire(idleFor);
 			}
-			this.schedule();
+			this.timer = undefined;
 		}, remaining || this.idleMs);
 	}
 }

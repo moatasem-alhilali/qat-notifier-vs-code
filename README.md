@@ -1,71 +1,89 @@
-# qat-notifier README
+# QAT Notifier
 
-This is the README for your extension "qat-notifier". After writing up a brief description, we recommend including the following sections.
+QAT Notifier is a rule-driven, humorous, Arabic roast-style notification system for developers. It reacts to diagnostics, editor activity, and idle time to drop playful reminders without spamming.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- Rule engine with per-rule cooldowns and a global cooldown
+- Diagnostics-aware messages (errors, warnings, clean)
+- Idle + dirty file reminders
+- Interval reminders for general motivation
+- Live reload of rules via command
+- OutputChannel logging (`QAT Notifier`)
 
-For example if there is an image subfolder under your extension project workspace:
+## Architecture
 
-\!\[feature X\]\(images/feature-x.png\)
+Core services are modular and testable. `src/extension.ts` only wires dependencies and registers events/commands.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+- `src/core/`
+  - `config.ts`: reads settings
+  - `logger.ts`: OutputChannel logger
+  - `types.ts`: shared types
+  - `utils/`: throttle/debounce
+- `src/editor/`
+  - `EditorContext.ts`: active editor snapshot
+  - `EditorEvents.ts`: VS Code event wiring
+  - `IdleTracker.ts`: idle detection
+- `src/analysis/`
+  - `DiagnosticsService.ts`: diagnostics state evaluation
+  - `DocumentScanner.ts`: bounded text scanning (`qat.maxScanChars`)
+- `src/rules/`
+  - `models.ts`: rule types
+  - `RulesService.ts`: load/validate rules JSON
+  - `RuleEngine.ts`: rule evaluation, cooldowns, interval support
+  - `matchers/`: `diagnostics`, `dirtyIdle`, `always`
+- `src/ui/`
+  - `NotificationService.ts`: global cooldown + VS Code notifications
 
-## Requirements
+## Rules
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Rules live at `.vscode/qat-rules.json` by default. The file is a JSON array of rules matching this shape:
 
-## Extension Settings
+```json
+{
+  "id": "unique-id",
+  "enabled": true,
+  "trigger": "onOpen" | "onSave" | "onType" | "onIdle" | "interval",
+  "when": {
+    "languageId": ["typescript"],
+    "fileGlob": "**/*.ts"
+  },
+  "check": {
+    "type": "diagnostics" | "dirtyIdle" | "always",
+    "mode": "errors" | "warnings" | "clean",
+    "idleMs": 90000
+  },
+  "notify": {
+    "level": "info" | "warning" | "error",
+    "messages": ["message 1", "message 2"]
+  },
+  "cooldownMs": 60000
+}
+```
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+Notes:
+- `diagnostics` evaluates the active document using `vscode.languages.getDiagnostics`.
+- `dirtyIdle` requires a dirty document and idle time (rule `idleMs` or `qat.idleMs`).
+- `interval` rules run on a timer. The interval uses `cooldownMs` when provided, otherwise `max(qat.globalCooldownMs, 60000)`.
 
-For example:
+## Commands
 
-This extension contributes the following settings:
+- `QAT: Reload Rules` (`qat-notifier.reloadRules`)
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+## Settings
 
-## Known Issues
+- `qat.enabled`: enable/disable QAT Notifier
+- `qat.rulesPath`: path to the rules file (relative or absolute)
+- `qat.globalCooldownMs`: global cooldown between notifications
+- `qat.maxScanChars`: max characters to scan from a document
+- `qat.idleMs`: idle time threshold in milliseconds
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+## Usage
 
-## Release Notes
+1. Open `.vscode/qat-rules.json` and edit rules/messages.
+2. Run `QAT: Reload Rules` to apply changes instantly.
+3. Trigger events by saving, typing, or going idle.
 
-Users appreciate release notes as you update your extension.
+## Output Logs
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+Open the Output panel and select `QAT Notifier` to see rule evaluation logs and cooldown decisions.

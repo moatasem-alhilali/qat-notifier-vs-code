@@ -1,23 +1,56 @@
 {
   "name": "qat-notifier",
-  "displayName": "qat-notifier",
-  "description": "إضافة تعرض إشعارات فكاهية وتحفيزية للمبرمج بناءً على حالة الملف الحالي (أخطاء، تحذيرات، ملف نظيف، عدم الحفظ) وسلوك المستخدم داخل المحرر.",
+  "displayName": "QAT Notifier",
+  "description": "Rule-driven, humorous Arabic roast-style notifications based on editor diagnostics and activity.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.109.0"
   },
   "categories": [
-    "Other"
+    "Productivity"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished",
+    "onCommand:qat-notifier.reloadRules"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "qat-notifier.helloWorld",
-        "title": "Hello World"
+        "command": "qat-notifier.reloadRules",
+        "title": "QAT: Reload Rules"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "QAT Notifier",
+      "properties": {
+        "qat.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable or disable QAT Notifier."
+        },
+        "qat.rulesPath": {
+          "type": "string",
+          "default": ".vscode/qat-rules.json",
+          "description": "Path to the rules file relative to the workspace root or an absolute path."
+        },
+        "qat.globalCooldownMs": {
+          "type": "number",
+          "default": 15000,
+          "description": "Global cooldown between notifications in milliseconds."
+        },
+        "qat.maxScanChars": {
+          "type": "number",
+          "default": 20000,
+          "description": "Maximum number of characters to scan from a document."
+        },
+        "qat.idleMs": {
+          "type": "number",
+          "default": 120000,
+          "description": "Idle time in milliseconds before idle rules can trigger."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
