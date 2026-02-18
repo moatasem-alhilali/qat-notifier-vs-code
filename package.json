@@ -1,6 +1,6 @@
 {
   "name": "qat-notifier",
-  "publisher": "moatasem-alhilali",
+  "publisher": "moatasem-alhillai",
   "displayName": "QAT مقيل",
   "description": "إضافة VS Code بإشعارات عربية ساخرة ومحفزة مبنية على قواعد لحالة الملفات ونشاطك (أخطاء/تحذيرات/نظيف/خمول) مع تبريد لمنع الإزعاج.",
   "version": "0.0.1",
