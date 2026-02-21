@@ -3,7 +3,7 @@
   "publisher": "moatasem-alhillai",
   "displayName": "QAT مقيل",
   "description": "إضافة VS Code بإشعارات عربية ساخرة ومحفزة مبنية على قواعد لحالة الملفات ونشاطك (أخطاء/تحذيرات/نظيف/خمول) مع تبريد لمنع الإزعاج.",
-  "icon": "public/images/favicon.png",
+  "icon": "public/images/marketplace.png",
   "version": "0.0.2",
   "license": "MIT",
   "engines": {
